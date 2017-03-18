@@ -3047,7 +3047,7 @@
     'target_conditions': [
       ['<(use_libpci)==1', {
         'defines': ['USE_LIBPCI=1'],
-      }],
+      }],  
       ['<(use_openssl_certs)==1', {
         'defines': ['USE_OPENSSL_CERTS=1'],
       }],
