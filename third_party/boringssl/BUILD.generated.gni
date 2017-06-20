@@ -554,6 +554,10 @@ crypto_sources_win_x86_64 = [
   "win-x86_64/crypto/sha/sha512-x86_64.asm",
 ]
 
+crypto_sources_winrt_sources = [
+  "src/crypto/rand/windows.cc",
+]
+
 fuzzers = [
   "cert",
   "client",

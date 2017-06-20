@@ -237,6 +237,7 @@ if (target_os == "android") {
 } else if (target_os == "win") {
   # On Windows we use the same toolchain for host and target by default.
   assert(target_os == host_os, "Win cross-compiles only work on win hosts.")
+  is_winrt = false
   if (is_clang) {
     _default_toolchain = "//build/toolchain/win:clang_$target_cpu"
   } else {
@@ -244,6 +245,7 @@ if (target_os == "android") {
   }
 } else if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
            target_os == "winrt_10") {
+  is_winrt = true
   _default_toolchain = "//build/toolchain/win:winrt_$target_cpu"
 } else {
   assert(false, "Unsupported target_os: $target_os")
@@ -494,10 +496,7 @@ if (is_win) {
     "//build/config/win:vs_code_analysis",
   ]
 }
-if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
-    current_os == "winrt_10") {
-  default_compiler_configs += [ "//build/config/win:target_winrt" ]
-}
+
 if (is_posix) {
   default_compiler_configs += [
     "//build/config/gcc:no_exceptions",
@@ -527,9 +526,17 @@ if (is_debug) {
 # Static libraries and source sets use only the compiler ones.
 set_defaults("static_library") {
   configs = default_compiler_configs
+  if (is_winrt) {
+    configs += [ 
+      "//build/config/win:target_winrt",
+    ]
+  }
 }
 set_defaults("source_set") {
   configs = default_compiler_configs
+  if (is_winrt) {
+    configs += [ "//build/config/win:target_winrt" ]
+  }
 }
 
 # Compute the set of configs common to all linked targets (shared libraries,
@@ -573,9 +580,15 @@ if (is_android) {
 }
 set_defaults("shared_library") {
   configs = default_shared_library_configs
+  if (is_winrt) {
+    configs += [ "//build/config/win:target_winrt" ]
+  }
 }
 set_defaults("loadable_module") {
   configs = default_shared_library_configs
+  if (is_winrt) {
+    configs += [ "//build/config/win:target_winrt" ]
+  }
 
   # loadable_modules are generally used by other libs, not just via JNI.
   if (is_android) {
@@ -651,6 +664,9 @@ template("component") {
 set_defaults("component") {
   if (is_component_build) {
     configs = default_shared_library_configs
+    if (is_winrt) {
+      configs += [ "//build/config/win:target_winrt" ]
+    }
     if (is_android) {
       configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     }

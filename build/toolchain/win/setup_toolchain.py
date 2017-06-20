@@ -194,6 +194,12 @@ def main():
       env['LIB']     = env['LIB']    .replace(r'\VC\LIB', r'\VC\LIB\STORE')
     if 'LIBPATH' in env:
       env['LIBPATH'] = env['LIBPATH'].replace(r'\VC\LIB', r'\VC\LIB\STORE')
+      #env['LIBPATH'] = env['LIBPATH'] + os.pathsep + os.environ['GYP_MSVS_OVERRIDE_PATH'] + r'\VC\lib\store\references'
+      env['LIBPATH'] = env['LIBPATH'] + os.pathsep + os.environ['GYP_MSVS_OVERRIDE_PATH'] + r'\VC\vcpackages'
+    else:
+      if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
+        os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
+      env['LIBPATH'] = os.environ['GYP_MSVS_OVERRIDE_PATH'] + r'\VC\vcpackages'
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.winrt_' + cpu, 'wb') as f:
       f.write(env_block)

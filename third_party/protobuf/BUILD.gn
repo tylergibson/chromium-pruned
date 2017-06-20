@@ -331,6 +331,9 @@ static_library("protobuf_full") {
   ]
 
   cflags = protobuf_lite_cflags
+  if(is_win && is_winrt) {
+    configs -= [ "//build/config/win:target_winrt" ]
+  }
 }
 
 # Only compile the compiler for the host architecture.
@@ -542,6 +545,10 @@ if (current_toolchain == host_toolchain) {
     public_configs = [ ":protobuf_config" ]
 
     cflags = protobuf_lite_cflags
+
+    if(is_win && is_winrt) {
+      configs -= [ "//build/config/win:target_winrt" ]
+    }
 
     public_deps = [
       ":protobuf_full",

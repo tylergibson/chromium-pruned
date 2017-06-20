@@ -972,6 +972,12 @@ config("default_warnings") {
       ]
     }
 
+    cflags += [
+      # WinRT throws as errors for local variables that aren't referenced
+      # locally at compile time.  Specific to jsimd_i386
+      "/wd4189",
+    ]
+
     # VS xtree header file needs to be patched or 4702 (unreachable code
     # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
     # not patched.

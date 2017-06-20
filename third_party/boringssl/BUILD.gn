@@ -46,12 +46,14 @@ all_sources = crypto_sources + ssl_sources
 # Windows' assembly is built with Yasm. The other platforms use the platform
 # assembler.
 if (is_win && !is_msan) {
-  import("//third_party/yasm/yasm_assemble.gni")
-  yasm_assemble("boringssl_asm") {
-    if (current_cpu == "x64") {
-      sources = crypto_sources_win_x86_64
-    } else if (current_cpu == "x86") {
-      sources = crypto_sources_win_x86
+  if(!is_winrt) {
+    import("//third_party/yasm/yasm_assemble.gni")
+    yasm_assemble("boringssl_asm") {
+      if (current_cpu == "x64" && !is_winrt) {
+        sources = crypto_sources_win_x86_64
+      } else if (current_cpu == "x86") {
+        sources = crypto_sources_win_x86
+      }
     }
   }
 } else {
@@ -108,11 +110,20 @@ if (is_win && !is_msan) {
 
 component("boringssl") {
   sources = all_sources
-  deps = [
-    ":boringssl_asm",
-  ]
+  if(is_winrt) {
+    public_configs = [ 
+      ":no_asm_config",
+      ":external_config", 
+    ]
+    sources += [ "src/crypto/rand/windows_rand.cc" ]
+  } else {
+    deps = [
+      ":boringssl_asm",
+    ]
+    
+    public_configs = [ ":external_config" ]
+  }
 
-  public_configs = [ ":external_config" ]
   configs += [ ":internal_config" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -170,13 +181,15 @@ if (build_with_chromium) {
 
   if (!is_ios) {
     test("boringssl_unittests") {
-      deps = [
-        ":boringssl_tests",
-        "//base",
-        "//base/test:run_all_unittests",
-        "//base/test:test_support",
-        "//testing/gtest",
-      ]
+      if(!is_winrt) {
+        deps = [
+          ":boringssl_tests",
+          "//base",
+          "//base/test:run_all_unittests",
+          "//base/test:test_support",
+          "//testing/gtest",
+        ]
+      }
       sources = [
         "boringssl_unittest.cc",
       ]
